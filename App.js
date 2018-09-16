@@ -20,9 +20,11 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
-        this.getStations()
         this.getBusStops()
-        setInterval(() => this.getBuses(), 2000);
+        this.getBuses()
+        this.getStations()
+        setInterval(() => this.getBuses(), 2000)
+        setInterval(() => this.getStations(), 15000)
     }
 
     getBusStops = () => {

@@ -6,7 +6,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyB4-kZx0yVJFBSX1GGanioLh5-E0bdCKLQ"
         }
-      }
+      },
+      "permissions": []
     },
     "ios": {
       "bundleIdentifier": "com.toddev.wolfie",
