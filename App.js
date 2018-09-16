@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, KeyboardAvoidingView } from 'react-native';
-import { MapView, Permissions, Location, Constants } from 'expo';
+import { StyleSheet, Text, View, TouchableOpacity, Image, KeyboardAvoidingView } from 'react-native';
+import { MapView, Constants } from 'expo';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { MaterialIcons } from '@expo/vector-icons';
 import style from './mapStyle'
@@ -16,17 +16,13 @@ export default class App extends React.Component {
             latitudeDelta: 0.018,
             longitudeDelta: 0.018,
         },
-        searchPins: [],
         showBikes: true
     }
-
-    searchQuery = ""
 
     componentDidMount() {
         this.getStations()
         this.getBusStops()
         setInterval(() => this.getBuses(), 2000);
-        this.getLocationAsync();
     }
 
     getBusStops = () => {
@@ -44,19 +40,6 @@ export default class App extends React.Component {
             })
         )
     }
-
-    getLocationAsync = async () => {
-        let { status } = await Permissions.askAsync(Permissions.LOCATION);
-        let location = await Location.getCurrentPositionAsync();
-        let newlocation = {
-            'latitudeDelta': 0.01,
-            'longitudeDelta': 0.01,
-            'latitude': location.coords.latitude,
-            'longitude': location.coords.longitude
-        }
-        console.log(newlocation)
-        this.setState({ location: newlocation });
-    };
 
     getStations = () => {
         fetch("https://sbu.publicbikesystem.net/ube/gbfs/v1/en/station_status").then(station_status =>
@@ -96,27 +79,6 @@ export default class App extends React.Component {
         }
     }
 
-    makeSearch = () => {
-        let query = this.searchQuery
-        fetch("https://us-central1-wolf-216514.cloudfunctions.net/function-1", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
-            },
-            body: JSON.stringify({ query })
-        }).then(response =>
-            response.json()
-        ).then(place => {
-            if (place.items.length >= 1) {
-                let positions = place.items.map(item => item.position)
-                console.log(positions)
-                this.setState({ searchPins: positions })
-            } else {
-                this.setState({ searchPins: [] })
-            }
-        })
-    }
-
     render() {
         return (
             <View style={styles.container}>
@@ -139,14 +101,10 @@ export default class App extends React.Component {
                         <MapView.Marker
                             coordinate={{ "longitude": parseFloat(stop.lon), "latitude": parseFloat(stop.lat) }}
                         >
-                            <View style={{ backgroundColor:'gray', borderRadius: 4, width: 8, height: 8}}>
+                            <View style={{ backgroundColor: 'gray', borderRadius: 4, width: 8, height: 8 }}>
                             </View>
                         </MapView.Marker>)
                     }
-                    {this.state.searchPins.map(pin => <MapView.Marker
-                        pinColor='tomato'
-                        coordinate={{ "longitude": pin[1], "latitude": pin[0] }}
-                    />)}
                     {this.state.bikeData.map(station => "lon" in station &&
                         <MapView.Marker
                             coordinate={{ "longitude": station.lon, "latitude": station.lat }}
@@ -178,23 +136,6 @@ export default class App extends React.Component {
                 <KeyboardAvoidingView style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%' }}
                     behavior="padding"
                 >
-                    <View style={{ justifyContent: 'flex-end', flex: 1 }}>
-                        <KeyboardAvoidingView
-                            behavior="padding"
-                            style={styles.circleButton2}
-                        >
-                            <View style={{ flexDirection: 'row', margin: 10 }}>
-                                <MaterialIcons name="search" size={25} />
-
-                                <TextInput
-                                    style={{ flex: 1, marginHorizontal: 4 }}
-                                    underlineColorAndroid="transparent"
-                                    onChangeText={(text) => this.searchQuery = text}
-                                    onSubmitEditing={() => this.makeSearch()}
-                                />
-                            </View>
-                        </KeyboardAvoidingView>
-                    </View>
                     <View style={{ justifyContent: 'flex-end' }}>
                         <TouchableOpacity
                             style={styles.circleButton}
